@@ -1,8 +1,7 @@
-import 'simple-line-icons/css/simple-line-icons.css';
-import '@coreui/coreui/dist/css/coreui-standalone.min.css';
+import 'react-toastify/dist/ReactToastify.css';
 import './app.css';
 
-import * as React from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { Card, Container } from 'reactstrap';
 import { HashRouter as Router, Route, Switch } from 'react-router-dom';
@@ -111,4 +110,7 @@ const mapDispatchToProps = { setLocale, getSession, getProfile };
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = typeof mapDispatchToProps;
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App);

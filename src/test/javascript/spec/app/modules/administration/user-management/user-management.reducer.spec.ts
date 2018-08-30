@@ -2,7 +2,7 @@ import configureStore from 'redux-mock-store';
 import promiseMiddleware from 'redux-promise-middleware';
 import axios from 'axios';
 import thunk from 'redux-thunk';
-import * as sinon from 'sinon';
+import sinon from 'sinon';
 
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 import userManagement, {
@@ -12,7 +12,8 @@ import userManagement, {
   getUser,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  reset
 } from 'app/modules/administration/user-management/user-management.reducer';
 
 describe('User management reducer tests', () => {
@@ -157,6 +158,19 @@ describe('User management reducer tests', () => {
     });
   });
 
+  describe('Reset', () => {
+    it('should reset the state', () => {
+      const payload = {};
+      expect(
+        userManagement(payload, {
+          type: ACTION_TYPES.RESET
+        })
+      ).toEqual({
+        user: {}
+      });
+    });
+  });
+
   describe('Actions', () => {
     let store;
 
@@ -274,6 +288,15 @@ describe('User management reducer tests', () => {
         }
       ];
       await store.dispatch(deleteUser('admin')).then(() => expect(store.getActions()).toEqual(expectedActions));
+    });
+    it('dispatches ACTION_TYPES.RESET actions', async () => {
+      const expectedActions = [
+        {
+          type: ACTION_TYPES.RESET
+        }
+      ];
+      await store.dispatch(reset());
+      expect(store.getActions()).toEqual(expectedActions);
     });
   });
 });

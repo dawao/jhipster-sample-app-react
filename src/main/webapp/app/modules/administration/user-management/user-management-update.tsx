@@ -1,13 +1,12 @@
-import * as React from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { Button, Label, Row, Col } from 'reactstrap';
 import { AvForm, AvGroup, AvInput, AvField, AvFeedback } from 'availity-reactstrap-validation';
 import { Translate, translate, ICrudGetAction, ICrudGetAllAction, ICrudPutAction } from 'react-jhipster';
-import FontAwesomeIcon from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { locales } from 'app/config/translation';
-import { IUser } from 'app/shared/model/user.model';
+import { locales, languages } from 'app/config/translation';
 import { getUser, getRoles, updateUser, createUser, reset } from './user-management.reducer';
 import { IRootState } from 'app/shared/reducers';
 
@@ -171,10 +170,10 @@ export class UserManagementUpdate extends React.Component<IUserManagementUpdateP
                   <Label for="langKey">
                     <Translate contentKey="userManagement.langKey">Language Key</Translate>
                   </Label>
-                  <AvField type="select" className="form-control" name="langKey" defaultValue={locales[0]}>
-                    {locales.map(lang => (
-                      <option value={lang} key={lang}>
-                        {lang}
+                  <AvField type="select" className="form-control" name="langKey" value={user.langKey}>
+                    {locales.map(locale => (
+                      <option value={locale} key={locale}>
+                        {languages[locale].name}
                       </option>
                     ))}
                   </AvField>
@@ -223,4 +222,7 @@ const mapDispatchToProps = { getUser, getRoles, updateUser, createUser, reset };
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = typeof mapDispatchToProps;
 
-export default connect(mapStateToProps, mapDispatchToProps)(UserManagementUpdate);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(UserManagementUpdate);

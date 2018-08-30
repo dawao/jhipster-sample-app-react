@@ -1,7 +1,7 @@
 import { createStore, applyMiddleware } from 'redux';
 import promiseMiddleware from 'redux-promise-middleware';
-// import * as toaster from 'react-toastify';
-// import * as sinon from 'sinon';
+import * as toastify from 'react-toastify'; // synthetic default import doesn't work here due to mocking.
+import sinon from 'sinon';
 
 import notificationMiddleware from 'app/config/notification-middleware';
 
@@ -29,6 +29,14 @@ describe('Notification Middleware', () => {
     },
     payload: Promise.resolve('foo')
   };
+  const HEADER_SUCCESS = {
+    type: SUCCESS_TYPE,
+    payload: Promise.resolve({
+      status: 201,
+      statusText: 'Created',
+      headers: { 'app-alert': 'foo.created', 'app-params': 'foo' }
+    })
+  };
   const DEFAULT_ERROR = {
     type: ERROR_TYPE,
     meta: {
@@ -36,41 +44,147 @@ describe('Notification Middleware', () => {
     },
     payload: Promise.reject(new Error('foo'))
   };
+  const VALIDATION_ERROR = {
+    type: ERROR_TYPE,
+    payload: Promise.reject({
+      response: {
+        data: {
+          type: 'https://www.jhipster.tech/problem/constraint-violation',
+          title: 'Method argument not valid',
+          status: 400,
+          path: '/api/foos',
+          message: 'error.validation',
+          fieldErrors: [{ objectName: 'foos', field: 'minField', message: 'Min' }]
+        },
+        status: 400,
+        statusText: 'Bad Request',
+        headers: { expires: '0' }
+      }
+    })
+  };
+  const HEADER_ERRORS = {
+    type: ERROR_TYPE,
+    payload: Promise.reject({
+      response: {
+        status: 400,
+        statusText: 'Bad Request',
+        headers: { 'app-error': 'foo.creation', 'app-params': 'foo' }
+      }
+    })
+  };
+  const NOT_FOUND_ERROR = {
+    type: ERROR_TYPE,
+    payload: Promise.reject({
+      response: {
+        data: {
+          status: 404,
+          message: 'Not found'
+        },
+        status: 404
+      }
+    })
+  };
+  const NO_SERVER_ERROR = {
+    type: ERROR_TYPE,
+    payload: Promise.reject({
+      response: {
+        status: 0
+      }
+    })
+  };
+  const GENERIC_ERROR = {
+    type: ERROR_TYPE,
+    payload: Promise.reject({
+      response: {
+        data: {
+          message: 'Error'
+        }
+      }
+    })
+  };
 
   const makeStore = () => applyMiddleware(notificationMiddleware, promiseMiddleware())(createStore)(() => null);
 
   beforeEach(() => {
     store = makeStore();
-    // sinon.spy(toaster, 'toast');
+    sinon.spy(toastify.toast, 'error');
+    sinon.spy(toastify.toast, 'success');
   });
 
   afterEach(() => {
-    // toaster.toast.restore();
+    (toastify.toast as any).error.restore();
+    (toastify.toast as any).success.restore();
   });
 
   it('should not trigger a toast message but should return action', () => {
     expect(store.dispatch(DEFAULT).payload).toEqual('foo');
-    //   expect(toaster.toast.called).toEqual(false);
+    expect((toastify.toast as any).error.called).toEqual(false);
+    expect((toastify.toast as any).success.called).toEqual(false);
   });
 
   it('should not trigger a toast message but should return promise success', async () => {
     await store.dispatch(DEFAULT_PROMISE).then(resp => {
       expect(resp.value).toEqual('foo');
     });
-    //   expect(toaster.toast.called).toEqual(false);
+    expect((toastify.toast as any).error.called).toEqual(false);
+    expect((toastify.toast as any).success.called).toEqual(false);
   });
 
   it('should trigger a success toast message and return promise success', async () => {
     await store.dispatch(DEFAULT_SUCCESS).then(resp => {
       expect(resp.value).toEqual('foo');
     });
-    //   expect(toaster.toast.getCall(0).args[0]).toEqual(DEFAULT_SUCCESS_MESSAGE);
+    const toastMsg = (toastify.toast as any).success.getCall(0).args[0];
+    expect(toastMsg).toEqual(DEFAULT_SUCCESS_MESSAGE);
+  });
+  it('should trigger a success toast message and return promise success for header alerts', async () => {
+    await store.dispatch(HEADER_SUCCESS).then(resp => {
+      expect(resp.value.status).toEqual(201);
+    });
+    const toastMsg = (toastify.toast as any).success.getCall(0).args[0];
+    expect(toastMsg).toContain('foo.created');
   });
 
   it('should trigger an error toast message and return promise error', async () => {
     await store.dispatch(DEFAULT_ERROR).catch(err => {
       expect(err.message).toEqual('foo');
     });
-    //   expect(toaster.toast.getCall(0).args[0]).toEqual(DEFAULT_ERROR_MESSAGE);
+    const toastMsg = (toastify.toast as any).error.getCall(0).args[0];
+    expect(toastMsg).toEqual(DEFAULT_ERROR_MESSAGE);
+  });
+  it('should trigger an error toast message and return promise error for generic message', async () => {
+    await store.dispatch(GENERIC_ERROR).catch(err => {
+      expect(err.response.data.message).toEqual('Error');
+    });
+    const toastMsg = (toastify.toast as any).error.getCall(0).args[0];
+    expect(toastMsg).toContain('Error');
+  });
+  it('should trigger an error toast message and return promise error for 400 response code', async () => {
+    await store.dispatch(VALIDATION_ERROR).catch(err => {
+      expect(err.response.data.message).toEqual('error.validation');
+    });
+    const toastMsg = (toastify.toast as any).error.getCall(0).args[0];
+    expect(toastMsg).toContain('error.Size');
+  });
+  it('should trigger an error toast message and return promise error for 404 response code', async () => {
+    await store.dispatch(NOT_FOUND_ERROR).catch(err => {
+      expect(err.response.data.message).toEqual('Not found');
+    });
+    const toastMsg = (toastify.toast as any).error.getCall(0).args[0];
+    expect(toastMsg).toContain('error.url.not.found');
+  });
+  it('should trigger an error toast message and return promise error for 0 response code', async () => {
+    await store.dispatch(NO_SERVER_ERROR).catch(err => {
+      expect(err.response.status).toEqual(0);
+    });
+    const toastMsg = (toastify.toast as any).error.getCall(0).args[0];
+    expect(toastMsg).toContain('error.server.not.reachable');
+  });
+  it('should trigger an error toast message and return promise error for headers containing errors', async () => {
+    await store.dispatch(HEADER_ERRORS).catch(err => {
+      expect(err.response.status).toEqual(400);
+    });
+    const toastMsg = (toastify.toast as any).error.getCall(0).args[0];
+    expect(toastMsg).toContain('foo.creation');
   });
 });

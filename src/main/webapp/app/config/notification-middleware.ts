@@ -44,7 +44,7 @@ export default () => next => action => {
       } else if (error && error.response) {
         const response = error.response;
         const data = response.data;
-        if (!(response.status === 401 && (error.message === '' || (data && data.path && data.path.indexOf('/api/account') === 0)))) {
+        if (!(response.status === 401 && (error.message === '' || (data && data.path && data.path.includes('/api/account'))))) {
           let i;
           switch (response.status) {
             // connection refused, server not reachable
@@ -70,6 +70,9 @@ export default () => next => action => {
                 const fieldErrors = data.fieldErrors;
                 for (i = 0; i < fieldErrors.length; i++) {
                   const fieldError = fieldErrors[i];
+                  if (['Min', 'Max', 'DecimalMin', 'DecimalMax'].includes(fieldError.message)) {
+                    fieldError.message = 'Size';
+                  }
                   // convert 'something[14].other[4].id' to 'something[].other[].id' so translations can be written to it
                   const convertedField = fieldError.field.replace(/\[\d*\]/g, '[]');
                   const fieldName = translate(`jhipsterSampleApplicationReactApp.${fieldError.objectName}.${convertedField}`);

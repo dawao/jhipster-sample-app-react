@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { Row, Col, Alert } from 'reactstrap';
-import { Translate } from 'react-jhipster';
+import { Translate, getUrlParameter } from 'react-jhipster';
 
 import { IRootState } from 'app/shared/reducers';
 import { activateAction, reset } from './activate.reducer';
@@ -34,7 +34,7 @@ export class ActivatePage extends React.Component<IActivateProps> {
   }
 
   componentDidMount() {
-    const { key } = this.props.match.params;
+    const key = getUrlParameter('key', this.props.location.search);
     this.props.activateAction(key);
   }
 
@@ -67,4 +67,7 @@ const mapDispatchToProps = { activateAction, reset };
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = typeof mapDispatchToProps;
 
-export default connect(mapStateToProps, mapDispatchToProps)(ActivatePage);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ActivatePage);
