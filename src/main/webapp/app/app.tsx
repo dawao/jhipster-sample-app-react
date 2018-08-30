@@ -1,11 +1,24 @@
+import 'simple-line-icons/css/simple-line-icons.css';
+import '@coreui/coreui/dist/css/coreui-standalone.min.css';
 import './app.css';
 
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Card } from 'reactstrap';
-import { HashRouter as Router } from 'react-router-dom';
+import { Card, Container } from 'reactstrap';
+import { HashRouter as Router, Route, Switch } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
-
+import {
+  AppAside,
+  AppBreadcrumb,
+  AppFooter,
+  AppHeader,
+  AppSidebar,
+  AppSidebarFooter,
+  AppSidebarForm,
+  AppSidebarHeader,
+  AppSidebarMinimizer,
+  AppSidebarNav
+} from '@coreui/react';
 import { IRootState } from 'app/shared/reducers';
 import { getSession } from 'app/shared/reducers/authentication';
 import { getProfile } from 'app/shared/reducers/application-profile';
@@ -16,6 +29,18 @@ import { hasAnyAuthority } from 'app/shared/auth/private-route';
 import ErrorBoundary from 'app/shared/error/error-boundary';
 import { AUTHORITIES } from 'app/config/constants';
 import AppRoutes from 'app/routes';
+import navigation from './_nav.js';
+
+const routes = [
+  { path: '/', name: 'Home' },
+  { path: '/login', name: 'Login' },
+  { path: '/logout', name: 'Logout' },
+  { path: '/register', name: 'Register' },
+  { path: '/admin', name: 'Admin' },
+  { path: '/entity', name: 'Entities' },
+  { path: '/account', name: 'Account' },
+  { path: '/admin/user-management', name: 'UserManagement' }
+];
 
 export interface IAppProps extends StateProps, DispatchProps {}
 
@@ -28,8 +53,9 @@ export class App extends React.Component<IAppProps> {
   render() {
     const paddingTop = '60px';
     return (
-      <Router>
-        <div className="app-container" style={{ paddingTop }}>
+      <div className="app">
+        <ToastContainer position={toast.POSITION.BOTTOM_CENTER} />
+        <AppHeader fixed className="jh-navbar navbar-dark bg-dark">
           <ToastContainer position={toast.POSITION.TOP_LEFT} className="toastify-container" toastClassName="toastify-toast" />
           <ErrorBoundary>
             <Header
@@ -42,16 +68,31 @@ export class App extends React.Component<IAppProps> {
               isSwaggerEnabled={this.props.isSwaggerEnabled}
             />
           </ErrorBoundary>
-          <div className="container-fluid view-container" id="app-view-container">
-            <Card className="jh-card">
+        </AppHeader>
+        <div className="app-body" id="app-view-container">
+          <AppSidebar fixed display="lg">
+            <AppSidebarHeader />
+            <AppSidebarForm />
+            <AppSidebarNav navConfig={navigation} {...this.props} />
+            <AppSidebarFooter />
+            <AppSidebarMinimizer />
+          </AppSidebar>
+          <main className="main">
+            <AppBreadcrumb appRoutes={routes} />
+            <Container fluid>
               <ErrorBoundary>
                 <AppRoutes />
               </ErrorBoundary>
-            </Card>
-            <Footer />
-          </div>
+            </Container>
+          </main>
+          <AppAside fixed hidden>
+            Aside
+          </AppAside>
         </div>
-      </Router>
+        <AppFooter>
+          <Footer />
+        </AppFooter>
+      </div>
     );
   }
 }

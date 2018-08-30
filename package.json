@@ -9,6 +9,8 @@
     "node_modules"
   ],
   "dependencies": {
+    "@coreui/coreui": "^2.0.2",
+    "@coreui/react": "^2.0.4",
     "@fortawesome/fontawesome": "1.1.5",
     "@fortawesome/fontawesome-free-solid": "5.0.10",
     "@fortawesome/react-fontawesome": "0.0.18",
@@ -36,6 +38,7 @@
     "redux-devtools-log-monitor": "1.4.0",
     "redux-promise-middleware": "5.0.0",
     "redux-thunk": "2.2.0",
+    "simple-line-icons": "^2.4.1",
     "tslib": "1.9.0",
     "uuid": "3.2.1"
   },
